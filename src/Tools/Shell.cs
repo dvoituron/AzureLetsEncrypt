@@ -63,6 +63,8 @@ namespace AzureLetsEncrypt.Tools
 
         public static void WriteTitle(string text)
         {
+            if (String.IsNullOrEmpty(text.Trim())) return;
+
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(text);
             Console.ResetColor();
@@ -70,6 +72,8 @@ namespace AzureLetsEncrypt.Tools
 
         public static void WriteQuestion(string text)
         {
+            if (String.IsNullOrEmpty(text.Trim())) return;
+
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine(text);
             Console.ResetColor();
@@ -95,19 +99,25 @@ namespace AzureLetsEncrypt.Tools
             } while (!options.Contains(solution));
             return solution;
         }
-        
+
         public static void WriteCommand(string command, string args)
         {
+            if (String.IsNullOrEmpty(command.Trim())) return;
+
             Console.WriteLine($"[Command] {command} {args}");
         }
 
         public static void WriteOutput(string output)
         {
+            if (String.IsNullOrEmpty(output.Trim())) return;
+
             Console.WriteLine(output);
         }
 
         public static void WriteError(string error)
         {
+            if (String.IsNullOrEmpty(error.Trim())) return;
+
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(error);
             Console.ResetColor();

@@ -13,7 +13,7 @@ namespace AzureLetsEncrypt.Configuration
 
         public Azure Azure { get; set; }
         public Certificate Certificate { get; set; }
-
+        
         public void Load()
         {
             string environment = Environment.GetEnvironmentVariable("Environment");
