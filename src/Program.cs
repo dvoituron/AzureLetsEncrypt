@@ -16,6 +16,13 @@ namespace AzureLetsEncrypt
             var createSsl = new Commands.CreateSsl();
             createSsl.Interactive();
 
+
+
+
+
+
+
+
             //Console.WriteLine("Reading AppSettings.json. Environment: " + Environment.GetEnvironmentVariable("Environment"));
             //var setting = new Configuration.AppSettings();
 

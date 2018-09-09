@@ -7,18 +7,16 @@ namespace AzureLetsEncrypt.Tools
 {
     public class Shell
     {
-        private const int PROCESS_TIMEOUT = 10000;      // 10 secondes
-
         public static string LogFilename => Path.Combine(Directory.GetCurrentDirectory(), $"{DateTime.Today:yyMMdd}-AzureLetsEncrypt.log");
 
         public static DisplayConsole Display { get; set; } = Shell.DisplayConsole.Command | Shell.DisplayConsole.Output | Shell.DisplayConsole.Error;
 
-        public static (string Output, string Error) Execute(string command, string args)
+        public static (string Output, string Error) Execute(string command, string args, string runSuccessfullyMessage)
         {
-            return Execute(command, args, Display);
+            return Execute(command, args, runSuccessfullyMessage, Display);
         }
 
-        public static (string Output, string Error) Execute(string command, string args, DisplayConsole display)
+        public static (string Output, string Error) Execute(string command, string args, string runSuccessfullyMessage, DisplayConsole display)
         {
             string output = string.Empty;
             string error = string.Empty;
@@ -45,15 +43,30 @@ namespace AzureLetsEncrypt.Tools
 
             try
             {
-                process.Start();
-                process.WaitForExit(PROCESS_TIMEOUT);
+                process.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
+                {
+                    output += e.Data;
+                    error += ((Process)sender).StandardError.ReadToEnd();
+                });
 
-                output = process.StandardOutput.ReadToEnd();
-                error = process.StandardOutput.ReadToEnd();
+                process.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
+                {
+                    error += ((Process)sender).StandardError.ReadToEnd();
+                });
+
+                process.Start();
+                process.BeginOutputReadLine();
+                process.WaitForExit();
             }
             catch (System.ComponentModel.Win32Exception ex)
             {
                 error = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : string.Empty);
+            }
+
+            if (!String.IsNullOrEmpty(runSuccessfullyMessage) && error.Contains(runSuccessfullyMessage))
+            {
+                output += error;
+                error = string.Empty;
             }
 
             if ((display & DisplayConsole.Output) != 0)
@@ -74,11 +87,16 @@ namespace AzureLetsEncrypt.Tools
             return String.IsNullOrEmpty(console.Error);
         }
 
+        public static bool RunSuccessfully((string Output, string Error) console, string valueToCheck)
+        {
+            return console.Output.Contains(valueToCheck) || console.Error.Contains(valueToCheck);
+        }
+
         public static void WriteTitle(string text)
         {
             if (String.IsNullOrEmpty(text.Trim())) return;
 
-            Console.ForegroundColor = ConsoleColor.White;
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(text);
             Console.ResetColor();
 
@@ -120,7 +138,7 @@ namespace AzureLetsEncrypt.Tools
             if (String.IsNullOrEmpty(command.Trim())) return;
 
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine($"  [Command] {command} {args}");
+            Console.WriteLine($"[Command] {command} {args}");
             Console.ResetColor();
 
             Log($"[Command] {command} {args}");
@@ -130,7 +148,7 @@ namespace AzureLetsEncrypt.Tools
         {
             if (String.IsNullOrEmpty(output.Trim())) return;
 
-            Console.WriteLine($"  {output}");
+            Console.WriteLine(output);
 
             Log(output);
         }

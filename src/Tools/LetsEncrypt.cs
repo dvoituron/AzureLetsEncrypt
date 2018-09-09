@@ -10,9 +10,9 @@ namespace AzureLetsEncrypt.Tools
     public class LetsEncrypt
     {
         public string PrivateKey => "mydomain.key";
+        public string AccountKey => "account.key";
         public string CertificateSigningRequestKey => "mydomain.csr";
         public string DomainCertificateKey => "mydomain.crt";
-        public string AccountKey => "account.key";
 
         public void CreateNewWebConfig(string fileWebConfig)
         {
@@ -54,9 +54,9 @@ namespace AzureLetsEncrypt.Tools
 
         public bool IsCommandAvailable()
         {
-            var console = Shell.Execute("le64", string.Empty, Shell.DisplayConsole.None);
+            var console = Shell.Execute("le64", string.Empty, runSuccessfullyMessage: "ZeroSSL Crypt::LE client", display: Shell.DisplayConsole.None);
 
-            return console.Output.Contains("ZeroSSL Crypt::LE client") && Shell.RunSuccessfully(console);
+            return Shell.RunSuccessfully(console);
         }
 
         public void ExtractEmbededLE64()
@@ -72,6 +72,9 @@ namespace AzureLetsEncrypt.Tools
 
         public bool ValidateCRT(string[] domains, string path)
         {
+            if (File.Exists(CertificateSigningRequestKey)) File.Delete(CertificateSigningRequestKey);
+            if (File.Exists(DomainCertificateKey)) File.Delete(DomainCertificateKey);
+
             string arguments = $" --key {AccountKey}" +                             // Account key file
                                $" --csr {CertificateSigningRequestKey}" +           // Certificate Signing Request file
                                $" --csr-key {PrivateKey}" +                         // Key for Certificate Signing Request
@@ -82,14 +85,18 @@ namespace AzureLetsEncrypt.Tools
                                $" --unlink" +                                       // Remove challenge files automatically
                                $" --live";                                          // Use the live server instead of the test one
 
-            var console = Shell.Execute("le64", arguments);
+            var console = Shell.Execute("le64", arguments, runSuccessfullyMessage: "enjoy your certificate!");
 
             return Shell.RunSuccessfully(console);
         }
 
         public bool CreatePFX(string pfxName, string password)
         {
-            var console = Shell.Execute("openssl", $"pkcs12 -export -out {pfxName} -inkey {PrivateKey} -in {DomainCertificateKey} -passout pass:{password}");
+            if (File.Exists(pfxName)) File.Delete(pfxName);
+
+            var console = Shell.Execute($"openssl", 
+                                        $"pkcs12 -export -out {pfxName} -inkey {PrivateKey} -in {DomainCertificateKey} -passout pass:{password}",
+                                        runSuccessfullyMessage: "state - done");
 
             return Shell.RunSuccessfully(console);
         }

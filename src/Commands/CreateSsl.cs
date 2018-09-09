@@ -15,9 +15,9 @@ namespace AzureLetsEncrypt.Commands
             var letsEncrypt = new LetsEncrypt();
             bool isCommandAvailable = false;
 
-            Shell.WriteTitle("Generating keys... {DateTime.Now:HH:mm:ss}");
-            Shell.WriteTitle("---------------------------");
-            Shell.WriteTitle("Current folder is " + Directory.GetCurrentDirectory());
+            Shell.WriteTitle($"Generating keys... {DateTime.Now:HH:mm:ss}");
+            Shell.WriteTitle($"---------------------------");
+            Shell.WriteTitle($"Current folder is {Directory.GetCurrentDirectory()}");
 
             // OpenSSL is available ?
             do

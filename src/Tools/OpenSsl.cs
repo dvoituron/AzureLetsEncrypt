@@ -11,9 +11,9 @@ namespace AzureLetsEncrypt.Tools
 
         public bool IsCommandAvailable()
         {
-            var console = Shell.Execute("openssl", "version", Shell.DisplayConsole.None);
+            var console = Shell.Execute("openssl", "version", runSuccessfullyMessage: "OpenSSL", display: Shell.DisplayConsole.None);
 
-            return console.Output.Contains("OpenSSL") && Shell.RunSuccessfully(console);
+            return Shell.RunSuccessfully(console);
         }
 
         public void ExtractEmbededOpenSsl()
@@ -29,16 +29,20 @@ namespace AzureLetsEncrypt.Tools
 
         public bool GeneratePrivateKey()
         {
-            var console = Shell.Execute("openssl", $"genrsa -out \"{PrivateKey}\" 2048");
+            if (File.Exists(PrivateKey)) File.Delete(PrivateKey);
+
+            var console = Shell.Execute("openssl", $"genrsa -out \"{PrivateKey}\" 2048", runSuccessfullyMessage: "Generating RSA private key");
 
             return Shell.RunSuccessfully(console);
         }
 
         public bool GenerateAccountKey()
         {
-            var console = Shell.Execute("openssl", $"genrsa -out \"{AccountKey}\" 4096");
+            if (File.Exists(AccountKey)) File.Delete(AccountKey);
 
-            return Shell.RunSuccessfully(console);
+            var console = Shell.Execute("openssl", $"genrsa -out \"{AccountKey}\" 4096", runSuccessfullyMessage: "Generating RSA private key");
+
+            return Shell.RunSuccessfully(console, "Generating RSA private key");
         }
     }
 }
