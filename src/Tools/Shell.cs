@@ -7,6 +7,17 @@ namespace AzureLetsEncrypt.Tools
 {
     public class Shell
     {
+        private const int PROCESS_TIMEOUT = 10000;      // 10 secondes
+
+        public static string LogFilename => Path.Combine(Directory.GetCurrentDirectory(), $"{DateTime.Today:yyMMdd}-AzureLetsEncrypt.log");
+
+        public static DisplayConsole Display { get; set; } = Shell.DisplayConsole.Command | Shell.DisplayConsole.Output | Shell.DisplayConsole.Error;
+
+        public static (string Output, string Error) Execute(string command, string args)
+        {
+            return Execute(command, args, Display);
+        }
+
         public static (string Output, string Error) Execute(string command, string args, DisplayConsole display)
         {
             string output = string.Empty;
@@ -28,13 +39,15 @@ namespace AzureLetsEncrypt.Tools
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    ErrorDialog = false,
+                    ErrorDialog = false,                    
                 }
             };
 
             try
             {
                 process.Start();
+                process.WaitForExit(PROCESS_TIMEOUT);
+
                 output = process.StandardOutput.ReadToEnd();
                 error = process.StandardOutput.ReadToEnd();
             }
@@ -68,6 +81,8 @@ namespace AzureLetsEncrypt.Tools
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(text);
             Console.ResetColor();
+
+            Log($"{text}");
         }
 
         public static void WriteQuestion(string text)
@@ -104,14 +119,20 @@ namespace AzureLetsEncrypt.Tools
         {
             if (String.IsNullOrEmpty(command.Trim())) return;
 
-            Console.WriteLine($"[Command] {command} {args}");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine($"  [Command] {command} {args}");
+            Console.ResetColor();
+
+            Log($"[Command] {command} {args}");
         }
 
         public static void WriteOutput(string output)
         {
             if (String.IsNullOrEmpty(output.Trim())) return;
 
-            Console.WriteLine(output);
+            Console.WriteLine($"  {output}");
+
+            Log(output);
         }
 
         public static void WriteError(string error)
@@ -121,6 +142,13 @@ namespace AzureLetsEncrypt.Tools
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(error);
             Console.ResetColor();
+
+            Log(error);
+        }
+
+        public static void Log(string message)
+        {
+            File.AppendAllText(LogFilename, Environment.NewLine + message);
         }
 
         [Flags]
@@ -129,7 +157,7 @@ namespace AzureLetsEncrypt.Tools
             None = 0,
             Output = 1,
             Error = 2,
-            Command = 4
+            Command = 4,
         }
     }
 }

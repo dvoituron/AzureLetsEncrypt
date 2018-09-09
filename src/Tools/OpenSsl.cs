@@ -6,7 +6,6 @@ namespace AzureLetsEncrypt.Tools
 {
     public class OpenSsl
     {
-        public Shell.DisplayConsole DefaultTraces => Shell.DisplayConsole.Output | Shell.DisplayConsole.Error;
         public string PrivateKey => "mydomain.key";
         public string AccountKey => "account.key";
 
@@ -30,14 +29,14 @@ namespace AzureLetsEncrypt.Tools
 
         public bool GeneratePrivateKey()
         {
-            var console = Shell.Execute("openssl", $"genrsa -out \"{PrivateKey}\" 2048", DefaultTraces);
+            var console = Shell.Execute("openssl", $"genrsa -out \"{PrivateKey}\" 2048");
 
             return Shell.RunSuccessfully(console);
         }
 
         public bool GenerateAccountKey()
         {
-            var console = Shell.Execute("openssl", $"genrsa -out \"{AccountKey}\" 4096", DefaultTraces);
+            var console = Shell.Execute("openssl", $"genrsa -out \"{AccountKey}\" 4096");
 
             return Shell.RunSuccessfully(console);
         }

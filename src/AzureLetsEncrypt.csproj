@@ -6,10 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Tools\le64.exe" />
     <None Remove="Tools\openssl.exe" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Tools\le64.exe" />
     <EmbeddedResource Include="Tools\openssl.exe" />
   </ItemGroup>
 

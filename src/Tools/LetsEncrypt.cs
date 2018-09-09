@@ -1,5 +1,7 @@
 ﻿using AzureLetsEncrypt.Helpers;
 using System;
+using System.IO;
+using System.Reflection;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
@@ -7,7 +9,10 @@ namespace AzureLetsEncrypt.Tools
 {
     public class LetsEncrypt
     {
-        public Shell.DisplayConsole DefaultTraces => Shell.DisplayConsole.Output | Shell.DisplayConsole.Error;
+        public string PrivateKey => "mydomain.key";
+        public string CertificateSigningRequestKey => "mydomain.csr";
+        public string DomainCertificateKey => "mydomain.crt";
+        public string AccountKey => "account.key";
 
         public void CreateNewWebConfig(string fileWebConfig)
         {
@@ -47,16 +52,46 @@ namespace AzureLetsEncrypt.Tools
             webConfig.Save(fileWebConfig);
         }
 
-        public void ValidateCRT()
+        public bool IsCommandAvailable()
         {
-            // To Execute...
-            // le.exe --key account.key --csr mydomain.csr --csr-key mydomain.key --crt mydomain.crt --domains "www.dvoituron.com,dvoituron.com" --path D:\home\site\wwwroot\.well-known\acme-challenge\ --generate-missing --unlink --live
+            var console = Shell.Execute("le64", string.Empty, Shell.DisplayConsole.None);
+
+            return console.Output.Contains("ZeroSSL Crypt::LE client") && Shell.RunSuccessfully(console);
         }
 
-        public void CreatePFX()
+        public void ExtractEmbededLE64()
         {
-            // To Execute...
-            // openssl pkcs12 -export -out mydomain.pfx -inkey mydomain.key -in mydomain.crt -passout pass:MyPassword
+            using (var resource = Assembly.GetExecutingAssembly().GetManifestResourceStream("AzureLetsEncrypt.Tools.le64.exe"))
+            {
+                using (var file = new FileStream("le64.exe", FileMode.Create, FileAccess.Write))
+                {
+                    resource.CopyTo(file);
+                }
+            }
+        }
+
+        public bool ValidateCRT(string[] domains, string path)
+        {
+            string arguments = $" --key {AccountKey}" +                             // Account key file
+                               $" --csr {CertificateSigningRequestKey}" +           // Certificate Signing Request file
+                               $" --csr-key {PrivateKey}" +                         // Key for Certificate Signing Request
+                               $" --crt {DomainCertificateKey}" +                   // Name for the domain certificate file
+                               $" --domains \"{String.Join(',', domains)}\"" +      // Domains list (separator = ,)
+                               $" --path \"{path}\"" +                              // Absolute path to .well-known/acme-challenge/
+                               $" --generate-missing" +                             // Generate missing files (key, csr and csr-key)
+                               $" --unlink" +                                       // Remove challenge files automatically
+                               $" --live";                                          // Use the live server instead of the test one
+
+            var console = Shell.Execute("le64", arguments);
+
+            return Shell.RunSuccessfully(console);
+        }
+
+        public bool CreatePFX(string pfxName, string password)
+        {
+            var console = Shell.Execute("openssl", $"pkcs12 -export -out {pfxName} -inkey {PrivateKey} -in {DomainCertificateKey} -passout pass:{password}");
+
+            return Shell.RunSuccessfully(console);
         }
     }
 }
