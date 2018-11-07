@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace AzureLetsEncrypt.Configuration
 {
@@ -49,7 +50,11 @@ namespace AzureLetsEncrypt.Configuration
                          .Replace("{keys.signing}", Certificate.Keys.Signing)
                          .Replace("{keys.certificate}", Certificate.Keys.Certificate)
                          .Replace("{keys.pfx}", Certificate.Keys.Pfx)
-                         .Replace("{keys.password}", Certificate.Keys.Password)
+                         .Replace("{keys.password}", Certificate.Keys.Password)                         
+                         .Replace("{domains.0}", Certificate.Domains.ElementAtOrDefault(0)?.Replace('.', '-'))
+                         .Replace("{domains.1}", Certificate.Domains.ElementAtOrDefault(1)?.Replace('.', '-'))
+                         .Replace("{domains.2}", Certificate.Domains.ElementAtOrDefault(2)?.Replace('.', '-'))
+                         .Replace("{domains.3}", Certificate.Domains.ElementAtOrDefault(3)?.Replace('.', '-'))
                          .Replace("{domains}", String.Join(',', Certificate.Domains));
             return value;
         }

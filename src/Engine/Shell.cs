@@ -87,6 +87,10 @@ namespace AzureLetsEncrypt.Engine
 
         public static void WriteTraceLog(string message)
         {
+            const string MARGIN = "          ";
+
+            message = MARGIN + message;
+            message = message.Replace("\n", "\n" + MARGIN).Replace("\r", string.Empty);
             Console.WriteLine(message);
             File.AppendAllText(LogFilename, $"{DateTime.Now.ToString("HH:mm:ss")} - {message}{Environment.NewLine}");
         }
