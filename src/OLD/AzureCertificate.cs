@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
-namespace AzureLetsEncrypt
+namespace OLDAzureLetsEncrypt
 {
     public class AzureCertificate
     {
