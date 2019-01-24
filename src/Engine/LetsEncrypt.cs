@@ -38,7 +38,6 @@ namespace AzureLetsEncrypt.Engine
             // le64
             console = Shell.Execute(AppSettings.Certificate.Commands.CreateCertificateRequest);
             ok = console.Output.Contains("enjoy your certificate!");
-            if (!ok) return false;
 
             // Delete the .well-know folder (if not existing before the process)
             if (wellknownMustBeDeleted)
@@ -46,6 +45,8 @@ namespace AzureLetsEncrypt.Engine
                 Shell.WriteCommandLog($"Remove the '{AppSettings.Certificate.Folders.WwwRoot}\\.well-known\\acme-challenge' folder");
                 RemoveWellknownFolder();
             }
+
+            if (!ok) return false;
 
             // openssl pkcs12 -export
             console = Shell.Execute(AppSettings.Certificate.Commands.ConvertToPfx);
