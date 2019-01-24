@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using static AzureLetsEncrypt.Engine.Shell;
 
 namespace AzureLetsEncrypt.Engine
 {
@@ -15,9 +12,9 @@ namespace AzureLetsEncrypt.Engine
             AppSettings = appSettings;
         }
 
-        public void Start()
+        public bool Start()
         {
-            var console = new RedirectedConsole();
+            var console = new Shell.RedirectedConsole();
             var ok = false;
 
             // Create a ./Store folder
@@ -27,12 +24,12 @@ namespace AzureLetsEncrypt.Engine
             // openssl genrsa -out {keys.private}
             console = Shell.Execute(AppSettings.Certificate.Commands.CreatePrivateKey);
             ok = console.Output.Contains("Generating RSA private key");
-            if (!ok) return;
+            if (!ok) return false;
 
             // openssl genrsa -out {keys.identifier}
             console = Shell.Execute(AppSettings.Certificate.Commands.CreateLetsEncryptKey);
             ok = console.Output.Contains("Generating RSA private key");
-            if (!ok) return;
+            if (!ok) return false;
 
             // Create the .well-known\acme-challenge folder
             Shell.WriteCommandLog($"Creation of '{AppSettings.Certificate.Folders.WwwRoot}\\.well-known\\acme-challenge' folder");
@@ -41,7 +38,7 @@ namespace AzureLetsEncrypt.Engine
             // le64
             console = Shell.Execute(AppSettings.Certificate.Commands.CreateCertificateRequest);
             ok = console.Output.Contains("enjoy your certificate!");
-            if (!ok) return;
+            if (!ok) return false;
 
             // Delete the .well-know folder (if not existing before the process)
             if (wellknownMustBeDeleted)
@@ -53,7 +50,9 @@ namespace AzureLetsEncrypt.Engine
             // openssl pkcs12 -export
             console = Shell.Execute(AppSettings.Certificate.Commands.ConvertToPfx);
             ok = console.Output.Contains("state - done");
-            if (!ok) return;
+            if (!ok) return false;
+
+            return true;
         }
 
         /// <summary>

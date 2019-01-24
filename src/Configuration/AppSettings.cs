@@ -55,7 +55,8 @@ namespace AzureLetsEncrypt.Configuration
                          .Replace("{domains.1}", Certificate.Domains.ElementAtOrDefault(1)?.Replace('.', '-'))
                          .Replace("{domains.2}", Certificate.Domains.ElementAtOrDefault(2)?.Replace('.', '-'))
                          .Replace("{domains.3}", Certificate.Domains.ElementAtOrDefault(3)?.Replace('.', '-'))
-                         .Replace("{domains}", String.Join(',', Certificate.Domains));
+                         .Replace("{domains}", String.Join(',', Certificate.Domains))
+                         .Replace("{password}", Certificate.Password);
             return value;
         }
     }
@@ -71,6 +72,7 @@ namespace AzureLetsEncrypt.Configuration
 
     public class Certificate
     {
+        public string Password { get; set; }
         public string[] Domains { get; set; }
         public Keys Keys { get; set; }
         public Commands Commands { get; set; }

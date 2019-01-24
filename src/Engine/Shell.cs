@@ -87,12 +87,20 @@ namespace AzureLetsEncrypt.Engine
 
         public static void WriteTraceLog(string message)
         {
-            const string MARGIN = "          ";
+            const string MARGIN = "   ";
 
             message = MARGIN + message;
             message = message.Replace("\n", "\n" + MARGIN).Replace("\r", string.Empty);
             Console.WriteLine(message);
             File.AppendAllText(LogFilename, $"{DateTime.Now.ToString("HH:mm:ss")} - {message}{Environment.NewLine}");
+        }
+
+        public static void WriteError(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"ERROR: {message}");
+            Console.ResetColor();
+            File.AppendAllText(LogFilename, $"{DateTime.Now.ToString("HH:mm:ss")} - ERROR: {message}{Environment.NewLine}");
         }
 
         public class RedirectedConsole

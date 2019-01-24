@@ -2,6 +2,7 @@
 using AzureLetsEncrypt.Engine;
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace AzureLetsEncrypt
 {
@@ -12,13 +13,14 @@ namespace AzureLetsEncrypt
             var watcher = new Stopwatch();
 
             var appSettings = new AppSettings();
-            var encrypt = new LetsEncrypt(appSettings);
+            var encrypted = new LetsEncrypt(appSettings).Start();
 
-            encrypt.Start();
+            if (!encrypted)
+                Shell.WriteError("GENERATIION FAILED.");
 
             Console.WriteLine($"Finished in {watcher.ElapsedMilliseconds} ms.");
 
-            if (System.Diagnostics.Debugger.IsAttached)
+            if (Debugger.IsAttached)
                 Console.ReadKey();
         }
     }
