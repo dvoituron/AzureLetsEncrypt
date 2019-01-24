@@ -95,6 +95,14 @@ namespace AzureLetsEncrypt.Engine
             File.AppendAllText(LogFilename, $"{DateTime.Now.ToString("HH:mm:ss")} - {message}{Environment.NewLine}");
         }
 
+        public static void WriteConfirmation(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"{message}");
+            Console.ResetColor();
+            File.AppendAllText(LogFilename, $"{DateTime.Now.ToString("HH:mm:ss")} - {message}{Environment.NewLine}");
+        }
+
         public static void WriteError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;

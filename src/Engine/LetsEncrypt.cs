@@ -48,7 +48,7 @@ namespace AzureLetsEncrypt.Engine
 
             if (!ok) return false;
 
-            // openssl pkcs12 -export
+            // openssl pkcs12 - export
             console = Shell.Execute(AppSettings.Certificate.Commands.ConvertToPfx);
             ok = console.Output.Contains("state - done");
             if (!ok) return false;
