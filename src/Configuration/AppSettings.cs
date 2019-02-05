@@ -21,8 +21,9 @@ namespace AzureLetsEncrypt.Configuration
 
             var builder = new ConfigurationBuilder()
                                .SetBasePath(Directory.GetCurrentDirectory())
-                               .AddJsonFile($"appsettings.json")                                  // Production values
-                               .AddJsonFile($"appsettings.{environment}.json", optional: true)    // Set Environment variable in Properties / Debug
+                               .AddJsonFile($"appsettings.json")                                           // Production values
+                               .AddJsonFile($"appsettings.{environment}.json", optional: true)             // Set Environment variable in Properties / Debug
+                               .AddJsonFile($"appsettings.{Environment.UserName}.json", optional: true)    // Development username
                                .AddEnvironmentVariables();
 
             var configuration = builder.Build();

@@ -12,13 +12,17 @@ namespace AzureLetsEncrypt
             var watcher = new Stopwatch();
 
             // Read configuration parameters
-            var appSettings = new AppSettings();
+            var appSettings = new AppSettings(); 
 
             // Generate a certificate validated by Let's Encrypt
             var encrypted = new LetsEncrypt(appSettings).Start();
 
             if (encrypted)
+            {
                 Shell.WriteConfirmation($"Certificate successfully exported to {appSettings.Certificate.Keys.Pfx}.");
+
+                var azure = new AzureCertificate(appSettings).Connect();
+            }
             else
                 Shell.WriteError("GENERATIION FAILED.");
 
