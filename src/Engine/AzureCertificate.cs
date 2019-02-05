@@ -10,24 +10,25 @@ namespace AzureLetsEncrypt.Engine
 {
     public class AzureCertificate
     {
-        private Configuration.AppSettings _appSettings;
         private IAzure _azure;
-        private string _certificate
 
         public AzureCertificate(Configuration.AppSettings appSettings)
         {
-            _appSettings = appSettings;
+            AppSettings = appSettings;
         }
+
+        public Configuration.AppSettings AppSettings { get; private set; }
 
         public AzureCertificate Connect()
         {
-            string shortClientId = _appSettings.Azure.ClientId.Substring(0, _appSettings.Azure.ClientId.Length > 8 ? 8 : _appSettings.Azure.ClientId.Length);
+            string clientId = AppSettings.Azure.ClientId;
+            string shortClientId = clientId.Substring(0, clientId.Length > 8 ? 8 : clientId.Length);
             Shell.WriteCommandLog($"Connection to Azure for ClientId '{shortClientId}...'.");
 
             var credentials = SdkContext.AzureCredentialsFactory
-                                        .FromServicePrincipal(_appSettings.Azure.ClientId,
-                                                              _appSettings.Azure.ClientSecret,
-                                                              _appSettings.Azure.TenantId,
+                                        .FromServicePrincipal(AppSettings.Azure.ClientId,
+                                                              AppSettings.Azure.ClientSecret,
+                                                              AppSettings.Azure.TenantId,
                                                               AzureEnvironment.AzureGlobalCloud);
 
             _azure = Azure.Configure()
@@ -43,36 +44,31 @@ namespace AzureLetsEncrypt.Engine
             if (_azure == null)
                 throw new ArgumentException("Call the Connect method before this one.");
 
-            // Load
-
             // App Services > [Web App] > properties > Resource ID
-            var webApp = _azure.WebApps.GetById(webApppResourceID);
+            var webApp = _azure.WebApps.GetById(AppSettings.Azure.WebAppResourceId);
+
+            if (webApp == null)
+                throw new ArgumentException("ERR: WebAppResourceId not found.");
 
             // Upload to Azure
             Shell.WriteCommandLog($"Upload the certificate to Azure.");
-            UploadTo(webApp, resourceGroup);
+            var thumbprint = UploadTo(webApp, AppSettings.Azure.ResourceGroup);
+            Shell.WriteCommandLog($"Certificate '{thumbprint}' uploaded.");
 
-            // Binding
-            foreach (var item in forHostnames)
+            // Binding SSL certificate for hostnames
+            foreach (var host in AppSettings.Certificate.Domains)
             {
-                Shell.WriteCommandLog($"Setting SSL Binding for hostname '{item}'.");
-                DefineSslBindingFor(item);
+                Shell.WriteCommandLog($"Setting SSL Binding for hostname '{host}'.");
+                DefineSslBindingFor(webApp, thumbprint, host);
             }
-
-
-            return this;
-
+            
+            return this;        
         }
 
-        //public string Path { get; private set; }
-        //public string Password { get; private set; }
-        //public string Thumbprint => this._inner.Thumbprint;
-        //public byte[] AllBytes => System.IO.File.ReadAllBytes(Path);
-
-        private void UploadTo(IWebApp webApp, string toResourceGroup)
+        private string UploadTo(IWebApp webApp, string toResourceGroup)
         {
-            string filename = setting.Certificate.Pfx.Filename;
-            string password = setting.Certificate.Pfx.Password;
+            string filename = AppSettings.Certificate.Keys.Pfx;
+            string password = AppSettings.Certificate.Keys.Password;
 
             var x509 = new X509Certificate2(filename, password);
             var thumbprint = x509.Thumbprint;
@@ -84,28 +80,31 @@ namespace AzureLetsEncrypt.Engine
                                               .ListByResourceGroup(group)
                                               .FirstOrDefault(i => i.Thumbprint == thumbprint);
 
+            // If not existing
             if (appServiceCertificate == null)
             {
                 appServiceCertificate = _azure.AppServices
-                                               .AppServiceCertificates
-                                               .Define(thumbprint)
-                                                   .WithRegion(webApp.Region)
-                                                   .WithExistingResourceGroup(group)
-                                                   .WithPfxByteArray(allBytes)
-                                                   .WithPfxPassword(password)
-                                               .Create();
+                                              .AppServiceCertificates
+                                              .Define(thumbprint)
+                                                  .WithRegion(webApp.Region)
+                                                  .WithExistingResourceGroup(group)
+                                                  .WithPfxByteArray(allBytes)
+                                                  .WithPfxPassword(password)
+                                              .Create();
             }
+
+            return thumbprint;
         }
 
-        private void DefineSslBindingFor(IWebApp webApp, string forHostname)
+        private void DefineSslBindingFor(IWebApp webApp, string thumbprint, string forHostname)
         {
             webApp.Update()
-                   .DefineSslBinding()
-                      .ForHostname(forHostname)
-                      .WithExistingCertificate(thumbprint)
-                      .WithSniBasedSsl()
-                      .Attach()
-                   .Apply();
+                  .DefineSslBinding()
+                     .ForHostname(forHostname)
+                     .WithExistingCertificate(thumbprint)
+                     .WithSniBasedSsl()
+                     .Attach()
+                  .Apply();
         }
     }
 }
