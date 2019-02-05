@@ -44,6 +44,8 @@ namespace AzureLetsEncrypt.Configuration
 
         private string ReplaceFieldsByValues(string value)
         {
+            if (String.IsNullOrEmpty(value)) return String.Empty;
+
             value = value.Replace("{folders.wwwroot}", Certificate.Folders.WwwRoot)
                          .Replace("{folders.store}", Certificate.Folders.Store)
                          .Replace("{keys.private}", Certificate.Keys.Private)

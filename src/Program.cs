@@ -17,7 +17,12 @@ namespace AzureLetsEncrypt
                 var appSettings = new AppSettings();
 
                 // Generate a certificate validated by Let's Encrypt
-                var encrypted = new LetsEncrypt(appSettings).Start();
+                bool encrypted = false;
+                 
+                if (String.IsNullOrEmpty(appSettings.Certificate.Commands.CreatePrivateKey) && System.IO.File.Exists(appSettings.Certificate.Keys.Pfx))
+                    encrypted = true;
+                else
+                    encrypted = new LetsEncrypt(appSettings).Start();
 
                 if (encrypted)
                     Shell.WriteConfirmation($"Certificate successfully generated to {appSettings.Certificate.Keys.Pfx}.");
