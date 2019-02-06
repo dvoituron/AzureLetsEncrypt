@@ -40,12 +40,15 @@ namespace AzureLetsEncrypt
 
                 if (encrypted)
                     Shell.WriteConfirmation($"Download and REMOVE your certificates saved in {appSettings.Certificate.Folders.Store}.");
+                else
+                    Environment.Exit(-1);
             }
             catch (Exception ex)
             {
                 Shell.WriteError(ex.Message);
                 Shell.WriteError(ex.InnerException?.Message);
                 Shell.WriteError("GENERATIION FAILED.");
+                Environment.Exit(-1);
             }
 
             Console.WriteLine($"Finished in {watcher.ElapsedMilliseconds} ms.");
