@@ -328,3 +328,8 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+/src/AppSettings.dev.json
+/src/AppSettings.dvoit.json
+/src/AppSettings-ccrek-test.json
+/src/AppSettings-ccrek-prod-pbl.json
+/src/AppSettings-ccrek-prod-mdt.json
