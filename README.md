@@ -61,6 +61,7 @@ If you prefer to create a validated certificate, but publish this pfx file manua
 
 1. Download the last release of [AzureLetsEncrypt](https://github.com/dvoituron/AzureLetsEncrypt/releases)
 2. Extract this ZIP package and edit the **AppSettings.json** file with your personnal information:
+   Remove the section **azure**, to avoid an automatic certificate upload in Azure (see previous chapter).
     ```json
     {
         "certificate": {
