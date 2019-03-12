@@ -83,3 +83,6 @@ If you prefer to create a validated certificate, but publish this pfx file manua
 6. Go to **SSL settings** to upload your Pfx.
    - **Private certificate**: upload your Pfx file (using your password)
    - **Bindings**: Add a SSL Binding using a SNI based
+
+
+         [![Demo](http://img.youtube.com/vi/lMScsFculvk/0.jpg)](http://www.youtube.com/watch?v=lMScsFculvk) 
