@@ -85,4 +85,4 @@ If you prefer to create a validated certificate, but publish this pfx file manua
    - **Bindings**: Add a SSL Binding using a SNI based
 
 
-         [![Demo](http://img.youtube.com/vi/lMScsFculvk/0.jpg)](http://www.youtube.com/watch?v=lMScsFculvk) 
+[![Demo](http://img.youtube.com/vi/lMScsFculvk/0.jpg)](http://www.youtube.com/watch?v=lMScsFculvk) 
