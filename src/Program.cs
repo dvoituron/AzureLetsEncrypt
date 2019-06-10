@@ -16,9 +16,15 @@ namespace AzureLetsEncrypt
                 // Read configuration parameters
                 var appSettings = new AppSettings();
 
+                // Add args parameters
+                if (args != null && args.Length > 0)
+                {
+                    appSettings.OverwriteWithCommandLine(args);
+                }
+
                 // Generate a certificate validated by Let's Encrypt
                 bool encrypted = false;
-                 
+
                 if (String.IsNullOrEmpty(appSettings.Certificate.Commands.CreatePrivateKey) && System.IO.File.Exists(appSettings.Certificate.Keys.Pfx))
                     encrypted = true;
                 else
@@ -33,7 +39,7 @@ namespace AzureLetsEncrypt
 
                 // Upload to Azure
                 if (encrypted && !String.IsNullOrEmpty(appSettings.Azure?.ClientId))
-                { 
+                {
                     var azure = new AzureCertificate(appSettings).Connect().Upload();
                     Shell.WriteConfirmation($"Certificate successfully uploaded to Azure.");
                 }

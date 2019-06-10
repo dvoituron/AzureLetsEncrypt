@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace AzureLetsEncrypt.Configuration
 {
@@ -30,16 +32,16 @@ namespace AzureLetsEncrypt.Configuration
 
             configuration.Bind(this);
 
-            Certificate.Keys.Private =                      ReplaceFieldsByValues(Certificate.Keys.Private);
-            Certificate.Keys.Identifier =                   ReplaceFieldsByValues(Certificate.Keys.Identifier);
-            Certificate.Keys.Signing =                      ReplaceFieldsByValues(Certificate.Keys.Signing);
-            Certificate.Keys.Certificate =                  ReplaceFieldsByValues(Certificate.Keys.Certificate);
-            Certificate.Keys.Pfx =                          ReplaceFieldsByValues(Certificate.Keys.Pfx);
-            Certificate.Keys.Password =                     ReplaceFieldsByValues(Certificate.Keys.Password);
-            Certificate.Commands.CreatePrivateKey =         ReplaceFieldsByValues(Certificate.Commands.CreatePrivateKey);
-            Certificate.Commands.CreateLetsEncryptKey =     ReplaceFieldsByValues(Certificate.Commands.CreateLetsEncryptKey);
+            Certificate.Keys.Private = ReplaceFieldsByValues(Certificate.Keys.Private);
+            Certificate.Keys.Identifier = ReplaceFieldsByValues(Certificate.Keys.Identifier);
+            Certificate.Keys.Signing = ReplaceFieldsByValues(Certificate.Keys.Signing);
+            Certificate.Keys.Certificate = ReplaceFieldsByValues(Certificate.Keys.Certificate);
+            Certificate.Keys.Pfx = ReplaceFieldsByValues(Certificate.Keys.Pfx);
+            Certificate.Keys.Password = ReplaceFieldsByValues(Certificate.Keys.Password);
+            Certificate.Commands.CreatePrivateKey = ReplaceFieldsByValues(Certificate.Commands.CreatePrivateKey);
+            Certificate.Commands.CreateLetsEncryptKey = ReplaceFieldsByValues(Certificate.Commands.CreateLetsEncryptKey);
             Certificate.Commands.CreateCertificateRequest = ReplaceFieldsByValues(Certificate.Commands.CreateCertificateRequest);
-            Certificate.Commands.ConvertToPfx =             ReplaceFieldsByValues(Certificate.Commands.ConvertToPfx);
+            Certificate.Commands.ConvertToPfx = ReplaceFieldsByValues(Certificate.Commands.ConvertToPfx);
         }
 
         private string ReplaceFieldsByValues(string value)
@@ -53,7 +55,7 @@ namespace AzureLetsEncrypt.Configuration
                          .Replace("{keys.signing}", Certificate.Keys.Signing)
                          .Replace("{keys.certificate}", Certificate.Keys.Certificate)
                          .Replace("{keys.pfx}", Certificate.Keys.Pfx)
-                         .Replace("{keys.password}", Certificate.Keys.Password)                         
+                         .Replace("{keys.password}", Certificate.Keys.Password)
                          .Replace("{domains.0}", Certificate.Domains.ElementAtOrDefault(0)?.Replace('.', '-'))
                          .Replace("{domains.1}", Certificate.Domains.ElementAtOrDefault(1)?.Replace('.', '-'))
                          .Replace("{domains.2}", Certificate.Domains.ElementAtOrDefault(2)?.Replace('.', '-'))
@@ -61,6 +63,37 @@ namespace AzureLetsEncrypt.Configuration
                          .Replace("{domains}", String.Join(',', Certificate.Domains))
                          .Replace("{password}", Certificate.Password);
             return value;
+        }
+
+        public void OverwriteWithCommandLine(string[] args)
+        {
+            string version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+            var isHelp = args.Contains("--help") || args.Contains("/help");
+            var domains = args.FirstOrDefault(i => i.StartsWith("--domains="))?.Substring(10);
+            var password = args.FirstOrDefault(i => i.StartsWith("--password="))?.Substring(11);
+
+            Console.WriteLine($"AzureLetsEncrypt {version}- Twitter:@DenisVoituron");
+            Console.WriteLine();
+
+            if (isHelp || String.IsNullOrEmpty(domains) || string.IsNullOrEmpty(password))
+            {
+                Console.WriteLine("  Generate a new free Let's Encrypt certificate for specifis domains.");
+                Console.WriteLine("  You must install it manually in Azure (go to your \"App Service / TLS/SSL settings\" section.");
+                Console.WriteLine("  The generated certificate will be store in a \".store\" folder.");
+                Console.WriteLine();
+                Console.WriteLine("AzureLetsEncrypt --domains=[List_of_domains] --password=[Password]");
+                Console.WriteLine();
+                Console.WriteLine("   --domains     List of domains to include in the certificate (no wildcard),");
+                Console.WriteLine("                 separated by semicolons.");
+                Console.WriteLine("   --password    Password used to encrypt the pfx certificate.");
+                Console.WriteLine();
+                Console.WriteLine("Example:");
+                Console.WriteLine("   AzureLetsEncrypt --domains=dvoituron.com;www.dvoituron.com --password=MyP@ssword");
+                return;
+            }
+
+            this.Certificate.Domains = domains.Split(';');
+            this.Certificate.Password = password;
         }
     }
 
