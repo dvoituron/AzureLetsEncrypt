@@ -14,12 +14,12 @@ This tool automates these steps.
 
 2. Install this tool, using this command:
 	```Bash
-	dotnet tool install dvoituron.tools.azureletsencrypt -g
+	dotnet tool install dvoituron.tools.azureletsencrypt --tool-path tools
 	```
 
 3. From you root folder (D:\home\site\wwwroot), run this command:
 	```Bash
-	azureletsencrypt --domains=mydomain.com;www.mydomain.com --password=My@Password
+	.\tools\AzureLetsEncrypt --domains=mydomain.com;www.mydomain.com --password=My@Password
 	```
 
 4. You can download your validated Pfx certificate from a subfolder `./store`.

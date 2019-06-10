@@ -111,7 +111,7 @@ namespace AzureLetsEncrypt.Configuration
 
             Certificate.Domains = new string[] { };
             Certificate.Password = String.Empty;
-            Certificate.Folders.WwwRoot = Environment.CurrentDirectory;  // "D:/home/site/wwwroot";
+            Certificate.Folders.WwwRoot = "D:/home/site/wwwroot";
             Certificate.Folders.Store = "./store";
             Certificate.Keys.Private = "{folders.store}/{domains.0}-private.key";
             Certificate.Keys.Identifier = "{folders.store}/{domains.0}-account-le.key";
