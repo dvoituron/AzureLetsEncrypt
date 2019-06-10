@@ -15,6 +15,7 @@ namespace AzureLetsEncrypt.Configuration
         }
 
         public Azure Azure { get; set; }
+
         public Certificate Certificate { get; set; }
 
         private void Load()
@@ -23,7 +24,7 @@ namespace AzureLetsEncrypt.Configuration
 
             var builder = new ConfigurationBuilder()
                                .SetBasePath(Directory.GetCurrentDirectory())
-                               .AddJsonFile($"appsettings.json")                                           // Production values
+                               .AddJsonFile($"appsettings.json", optional: true)                           // Production values
                                .AddJsonFile($"appsettings.{environment}.json", optional: true)             // Set Environment variable in Properties / Debug
                                .AddJsonFile($"appsettings.{Environment.UserName}.json", optional: true)    // Development username
                                .AddEnvironmentVariables();
@@ -31,6 +32,9 @@ namespace AzureLetsEncrypt.Configuration
             var configuration = builder.Build();
 
             configuration.Bind(this);
+
+            if (Certificate == null)
+                SetDefaultConfiguration();
 
             Certificate.Keys.Private = ReplaceFieldsByValues(Certificate.Keys.Private);
             Certificate.Keys.Identifier = ReplaceFieldsByValues(Certificate.Keys.Identifier);
@@ -72,14 +76,14 @@ namespace AzureLetsEncrypt.Configuration
             var domains = args.FirstOrDefault(i => i.StartsWith("--domains="))?.Substring(10);
             var password = args.FirstOrDefault(i => i.StartsWith("--password="))?.Substring(11);
 
-            Console.WriteLine($"AzureLetsEncrypt {version}- Twitter:@DenisVoituron");
+            Console.WriteLine($"AzureLetsEncrypt {version} - Twitter:@DenisVoituron");
             Console.WriteLine();
 
             if (isHelp || String.IsNullOrEmpty(domains) || string.IsNullOrEmpty(password))
             {
                 Console.WriteLine("  Generate a new free Let's Encrypt certificate for specifis domains.");
                 Console.WriteLine("  You must install it manually in Azure (go to your \"App Service / TLS/SSL settings\" section.");
-                Console.WriteLine("  The generated certificate will be store in a \".store\" folder.");
+                Console.WriteLine("  The generated certificate will be store in a \"./store\" folder.");
                 Console.WriteLine();
                 Console.WriteLine("AzureLetsEncrypt --domains=[List_of_domains] --password=[Password]");
                 Console.WriteLine();
@@ -94,6 +98,31 @@ namespace AzureLetsEncrypt.Configuration
 
             this.Certificate.Domains = domains.Split(';');
             this.Certificate.Password = password;
+        }
+
+        private void SetDefaultConfiguration()
+        {
+            string assemblyPath = new FileInfo(Assembly.GetExecutingAssembly().Location).DirectoryName;
+
+            Certificate = new Certificate();
+            Certificate.Folders = new Folders();
+            Certificate.Keys = new Keys();
+            Certificate.Commands = new Commands();
+
+            Certificate.Domains = new string[] { };
+            Certificate.Password = String.Empty;
+            Certificate.Folders.WwwRoot = Environment.CurrentDirectory;  // "D:/home/site/wwwroot";
+            Certificate.Folders.Store = "./store";
+            Certificate.Keys.Private = "{folders.store}/{domains.0}-private.key";
+            Certificate.Keys.Identifier = "{folders.store}/{domains.0}-account-le.key";
+            Certificate.Keys.Signing = "{folders.store}/{domains.0}-signing-le.csr";
+            Certificate.Keys.Certificate = "{folders.store}/{domains.0}.crt";
+            Certificate.Keys.Pfx = "{folders.store}/{domains.0}.pfx";
+            Certificate.Keys.Password = "{password}";
+            Certificate.Commands.CreatePrivateKey = assemblyPath + "/openssl genrsa -out {keys.private} 2048";
+            Certificate.Commands.CreateLetsEncryptKey = assemblyPath + "/openssl genrsa -out {keys.identifier} 4096";
+            Certificate.Commands.CreateCertificateRequest = assemblyPath + "/le64 --key {keys.identifier} --csr {keys.signing} --csr-key {keys.private} --crt {keys.certificate} --domains \"{domains}\" --generate-missing --path {folders.wwwroot}\\.well-known\\acme-challenge\\ --unlink --live";
+            Certificate.Commands.ConvertToPfx = assemblyPath + "/openssl pkcs12 -export -out {keys.pfx} -inkey {keys.private} -in {keys.certificate} -passout pass:{keys.password}";
         }
     }
 

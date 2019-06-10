@@ -13,6 +13,7 @@ namespace AzureLetsEncrypt
 
             try
             {
+
                 // Read configuration parameters
                 var appSettings = new AppSettings();
 
@@ -21,6 +22,9 @@ namespace AzureLetsEncrypt
                 {
                     appSettings.OverwriteWithCommandLine(args);
                 }
+
+                if (appSettings.Certificate.Domains.Length == 0 || String.IsNullOrEmpty(appSettings.Certificate.Password))
+                    throw new ArgumentException("Sets corrects domains and password using appSettings.json or command line (--help).");
 
                 // Generate a certificate validated by Let's Encrypt
                 bool encrypted = false;
@@ -48,6 +52,7 @@ namespace AzureLetsEncrypt
                     Shell.WriteConfirmation($"Download and REMOVE your certificates saved in {appSettings.Certificate.Folders.Store}.");
                 else
                     Environment.Exit(-1);
+
             }
             catch (Exception ex)
             {
