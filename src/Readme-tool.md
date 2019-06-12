@@ -19,7 +19,7 @@ This tool automates these steps.
 
 3. From you root folder (D:\home\site\wwwroot), run this command:
 	```Bash
-	.\tools\AzureLetsEncrypt --domains=mydomain.com;www.mydomain.com --password=My@Password
+	.\tools\AzureLetsEncrypt --domains=mydomain.com,www.mydomain.com --password=My@Password
 	```
 
 4. You can download your validated Pfx certificate from a subfolder `./store`.

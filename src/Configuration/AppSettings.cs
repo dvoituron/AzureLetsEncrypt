@@ -9,33 +9,48 @@ namespace AzureLetsEncrypt.Configuration
 {
     public class AppSettings
     {
-        public AppSettings()
+        public AppSettings(string[] args)
         {
-            Load();
+            SetDefaultConfiguration();
+            Load(args);
         }
+
+        public bool AskHelp { get; set; }
 
         public Azure Azure { get; set; }
 
         public Certificate Certificate { get; set; }
 
-        private void Load()
+        private void Load(string[] args)
         {
-            string environment = Environment.GetEnvironmentVariable("Environment");
 
-            var builder = new ConfigurationBuilder()
-                               .SetBasePath(Directory.GetCurrentDirectory())
-                               .AddJsonFile($"appsettings.json", optional: true)                           // Production values
-                               .AddJsonFile($"appsettings.{environment}.json", optional: true)             // Set Environment variable in Properties / Debug
-                               .AddJsonFile($"appsettings.{Environment.UserName}.json", optional: true)    // Development username
-                               .AddEnvironmentVariables();
+            // Parameters froms CommandLine arguments
+            if (args != null && args.Length > 0)
+            {
+                this.LoadFromCommandLine(args);
+            }
 
-            var configuration = builder.Build();
+            // Parameters from appSettings.json
+            else
+            {
+                string environment = Environment.GetEnvironmentVariable("Environment");
 
-            configuration.Bind(this);
+                var builder = new ConfigurationBuilder()
+                                   .SetBasePath(Directory.GetCurrentDirectory())
+                                   .AddJsonFile($"appsettings.json", optional: true)                           // Production values
+                                   .AddJsonFile($"appsettings.{environment}.json", optional: true)             // Set Environment variable in Properties / Debug
+                                   .AddJsonFile($"appsettings.{Environment.UserName}.json", optional: true)    // Development username
+                                   .AddEnvironmentVariables();
 
-            if (Certificate == null)
-                SetDefaultConfiguration();
+                var configuration = builder.Build();
 
+                configuration.Bind(this);
+            }
+
+            if (Certificate.Folders.WwwRoot.EndsWith('/') || Certificate.Folders.WwwRoot.EndsWith('\\'))
+                Certificate.Folders.WwwRoot = Certificate.Folders.WwwRoot.Remove(Certificate.Folders.WwwRoot.Length - 1);
+
+            Certificate.Folders.Store = ReplaceFieldsByValues(Certificate.Folders.Store);
             Certificate.Keys.Private = ReplaceFieldsByValues(Certificate.Keys.Private);
             Certificate.Keys.Identifier = ReplaceFieldsByValues(Certificate.Keys.Identifier);
             Certificate.Keys.Signing = ReplaceFieldsByValues(Certificate.Keys.Signing);
@@ -69,18 +84,23 @@ namespace AzureLetsEncrypt.Configuration
             return value;
         }
 
-        public void OverwriteWithCommandLine(string[] args)
+        private void LoadFromCommandLine(string[] args)
         {
             string version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
             var isHelp = args.Contains("--help") || args.Contains("/help");
             var domains = args.FirstOrDefault(i => i.StartsWith("--domains="))?.Substring(10);
             var password = args.FirstOrDefault(i => i.StartsWith("--password="))?.Substring(11);
+            var rootFolder = args.FirstOrDefault(i => i.StartsWith("--path="))?.Substring(7);
+
+            if (String.IsNullOrEmpty(rootFolder)) rootFolder = "D:/home/site/wwwroot";
 
             Console.WriteLine($"AzureLetsEncrypt {version} - Twitter:@DenisVoituron");
             Console.WriteLine();
 
             if (isHelp || String.IsNullOrEmpty(domains) || string.IsNullOrEmpty(password))
             {
+                this.AskHelp = true;
+
                 Console.WriteLine("  Generate a new free Let's Encrypt certificate for specifis domains.");
                 Console.WriteLine("  You must install it manually in Azure (go to your \"App Service / TLS/SSL settings\" section.");
                 Console.WriteLine("  The generated certificate will be store in a \"./store\" folder.");
@@ -88,16 +108,18 @@ namespace AzureLetsEncrypt.Configuration
                 Console.WriteLine("AzureLetsEncrypt --domains=[List_of_domains] --password=[Password]");
                 Console.WriteLine();
                 Console.WriteLine("   --domains     List of domains to include in the certificate (no wildcard),");
-                Console.WriteLine("                 separated by semicolons.");
+                Console.WriteLine("                 separated by comas.");
                 Console.WriteLine("   --password    Password used to encrypt the pfx certificate.");
+                Console.WriteLine("   --path        Root folder of the website (default is D:/home/site/wwwroot).");
                 Console.WriteLine();
                 Console.WriteLine("Example:");
-                Console.WriteLine("   AzureLetsEncrypt --domains=dvoituron.com;www.dvoituron.com --password=MyP@ssword");
+                Console.WriteLine("   AzureLetsEncrypt --domains=dvoituron.com,www.dvoituron.com --password=MyP@ssword");
                 return;
             }
 
-            this.Certificate.Domains = domains.Split(';');
+            this.Certificate.Domains = domains.Split(',');
             this.Certificate.Password = password;
+            this.Certificate.Folders.WwwRoot = rootFolder;
         }
 
         private void SetDefaultConfiguration()
@@ -111,8 +133,8 @@ namespace AzureLetsEncrypt.Configuration
 
             Certificate.Domains = new string[] { };
             Certificate.Password = String.Empty;
-            Certificate.Folders.WwwRoot = "D:/home/site/wwwroot";
-            Certificate.Folders.Store = "./store";
+            Certificate.Folders.WwwRoot = "D:/Home/site/wwwroot";
+            Certificate.Folders.Store = "{folders.wwwroot}/store";
             Certificate.Keys.Private = "{folders.store}/{domains.0}-private.key";
             Certificate.Keys.Identifier = "{folders.store}/{domains.0}-account-le.key";
             Certificate.Keys.Signing = "{folders.store}/{domains.0}-signing-le.csr";

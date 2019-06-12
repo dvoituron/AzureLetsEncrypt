@@ -6,7 +6,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>azureletsencrypt</ToolCommandName>
     <PackageOutputPath>bin/nupkgs</PackageOutputPath>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
     <Authors>Denis Voituron</Authors>
     <Company>Voituron</Company>
     <PackageProjectUrl>https://github.com/dvoituron/AzureLetsEncrypt</PackageProjectUrl>
@@ -35,6 +35,15 @@ The generated certificate will be store in a ./store folder.</Description>
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="AppSettings-ccrek-prod-mdt.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="AppSettings-ccrek-prod-pbl.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="AppSettings-ccrek-test.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
     <None Update="AppSettings.dvoit.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>

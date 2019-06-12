@@ -9,21 +9,28 @@ namespace AzureLetsEncrypt
     {
         static void Main(string[] args)
         {
+
+#if DEBUG
+            // Tests
+            //args = new[] { "--domains=mydomain.com,www.mydomain.com", "--password=My@Password" };
+            //args = new[] { "--domains=mydomain.com,www.mydomain.com", "--password=My@Password", "--path=C:\\_Temp" };
+            //args = new[] { "--help" };
+#endif
+
             var watcher = new Stopwatch();
 
             try
             {
 
                 // Read configuration parameters
-                var appSettings = new AppSettings();
+                var appSettings = new AppSettings(args);
 
-                // Add args parameters
-                if (args != null && args.Length > 0)
-                {
-                    appSettings.OverwriteWithCommandLine(args);
-                }
+                // Help already displayed
+                if (appSettings.AskHelp)
+                    return;
 
-                if (appSettings.Certificate.Domains.Length == 0 || String.IsNullOrEmpty(appSettings.Certificate.Password))
+                // Some flags are required
+                else if (appSettings.Certificate.Domains.Length == 0 || String.IsNullOrEmpty(appSettings.Certificate.Password))
                     throw new ArgumentException("Sets corrects domains and password using appSettings.json or command line (--help).");
 
                 // Generate a certificate validated by Let's Encrypt
