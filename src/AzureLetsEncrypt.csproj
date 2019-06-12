@@ -3,6 +3,22 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>azureletsencrypt</ToolCommandName>
+    <PackageOutputPath>bin/nupkgs</PackageOutputPath>
+    <Version>1.3.0</Version>
+    <Authors>Denis Voituron</Authors>
+    <Company>Voituron</Company>
+    <PackageProjectUrl>https://github.com/dvoituron/AzureLetsEncrypt</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dvoituron/AzureLetsEncrypt</RepositoryUrl>
+    <Copyright>Copyright 2019 Denis Voituron</Copyright>
+    <Description>Tool to generate a new free Let's Encrypt certificate for specifis domains.
+You must install it manually in Azure (go to your [App Service / TLS/SSL settings] section.
+The generated certificate will be store in a ./store folder.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>Azure Certificate LetsEncrypt SSL Domain</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Dvoituron.Tools.AzureLetsEncrypt</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,11 +35,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="AppSettings-ccrek-prod-mdt.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="AppSettings-ccrek-prod-pbl.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="AppSettings-ccrek-test.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
     <None Update="AppSettings.dvoit.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Update="AppSettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Update="le64.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
