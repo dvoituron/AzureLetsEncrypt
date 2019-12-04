@@ -6,7 +6,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>azureletsencrypt</ToolCommandName>
     <PackageOutputPath>bin/nupkgs</PackageOutputPath>
-    <Version>1.3.0</Version>
+    <Version>1.4.0</Version>
     <Authors>Denis Voituron</Authors>
     <Company>Voituron</Company>
     <PackageProjectUrl>https://github.com/dvoituron/AzureLetsEncrypt</PackageProjectUrl>
@@ -19,6 +19,7 @@ The generated certificate will be store in a ./store folder.</Description>
     <PackageTags>Azure Certificate LetsEncrypt SSL Domain</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Dvoituron.Tools.AzureLetsEncrypt</PackageId>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
